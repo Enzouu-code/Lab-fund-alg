@@ -76,16 +76,13 @@ def descurtir_video():
 
 
 
-
-
-
-
-
 while True:
     print("\n----MENU----")
     print("\n1- Cadastrar Usuário")
     print("2- Fazer Login")
-    print("3- Sair")
+    print("3- Curtir")
+    print("4- Descurtir vídeos")
+    print("5- Sair")
     
     opcao = input("\nEscolha uma opção: ")
     
@@ -99,6 +96,12 @@ while True:
             print("Bem-Vindo à Plataforma!")
     
     elif opcao == "3":
+        curtir_video()
+
+    elif opcao == "4":
+        descurtir_video()
+
+    elif opcao == "5":
         print("Saindo...")
 
     else:
