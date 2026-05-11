@@ -1,240 +1,211 @@
-import json
-import os
+ARQ_USUARIOS = "usuarios.txt"
+ARQ_VIDEOS = "videos.txt"
 
-ARQUIVO_USUARIOS = "usuarios.json"
-ARQUIVO_VIDEOS   = "videos.json"
+usuarios = []
+videos = []
 
-usuarios = {}
-videos = {}
-usuario_logado = None
+usuario_logado = ""
 
 
-import json
-import os
-
-ARQUIVO_USUARIOS = "usuarios.json"
-ARQUIVO_VIDEOS   = "videos.json"
-
-usuarios = {}
-videos = {}
-usuario_logado = None
-
-
-# ── PERSISTÊNCIA ─────────────────────────────────────────
+# ─────────────────────────────
+# CARREGAR
+# ─────────────────────────────
 
 def carregar_dados():
     global usuarios, videos
 
-    if os.path.exists(ARQUIVO_USUARIOS):
-        with open(ARQUIVO_USUARIOS, "r", encoding="utf-8") as f:
-            usuarios = json.load(f)
+    usuarios.clear()
+    videos.clear()
 
-    if os.path.exists(ARQUIVO_VIDEOS):
-        with open(ARQUIVO_VIDEOS, "r", encoding="utf-8") as f:
-            videos = json.load(f)
+    arq = open(ARQ_USUARIOS, "r", encoding="utf-8")
 
+    for linha in arq:
+        usuarios.append(linha.strip())
+
+    arq.close()
+
+    arq = open(ARQ_VIDEOS, "r", encoding="utf-8")
+
+    for linha in arq:
+        videos.append(linha.strip())
+
+    arq.close()
+
+
+# ─────────────────────────────
+# SALVAR
+# ─────────────────────────────
 
 def salvar_dados():
-    with open(ARQUIVO_USUARIOS, "w", encoding="utf-8") as f:
-        json.dump(usuarios, f, indent=2, ensure_ascii=False)
+    arq = open(ARQ_USUARIOS, "w", encoding="utf-8")
 
-    with open(ARQUIVO_VIDEOS, "w", encoding="utf-8") as f:
-        json.dump(videos, f, indent=2, ensure_ascii=False)
+    for usuario in usuarios:
+        arq.write(usuario + "\n")
 
+    arq.close()
 
-# ── HELPERS ──────────────────────────────────────────────
+    arq = open(ARQ_VIDEOS, "w", encoding="utf-8")
 
-def requer_login():
-    if usuario_logado is None:
-        print("Faça login primeiro.")
-        return False
-    return True
+    for video in videos:
+        arq.write(video + "\n")
 
-
-def exibir_video(nome):
-    v = videos[nome]
-    print(f"\n🎬 {nome}")
-    print(f"Descrição: {v['descricao']}")
-    print(f"Gênero: {v.get('genero', '-')}")
-    print(f"Ano: {v.get('ano', '-')}")
-    print(f"Likes: {v['likes']}")
+    arq.close()
 
 
-def get_usuario():
-    return usuarios[usuario_logado]
-
-
-# ── USUÁRIOS ─────────────────────────────────────────────
+# ─────────────────────────────
+# USUÁRIO
+# ─────────────────────────────
 
 def cadastrar_usuario():
     login = input("Login: ")
-
-    if not login:
-        print("Login vazio.")
-        return
-
-    if login in usuarios:
-        print("Já existe.")
-        return
-
     senha = input("Senha: ")
 
-    usuarios[login] = {
-        "senha": senha,
-        "curtidos": [],
-        "playlists": {}
-    }
+    usuarios.append(login + ";" + senha)
 
     salvar_dados()
-    print("Usuário criado!")
+    print("Usuário criado.")
 
 
 def fazer_login():
     global usuario_logado
 
-    if usuario_logado:
-        print("Já está logado.")
-        return
-
     login = input("Login: ")
     senha = input("Senha: ")
 
-    if login not in usuarios:
-        print("Usuário não existe.")
-        return
+    for usuario in usuarios:
+        dados = usuario.split(";")
 
-    if usuarios[login]["senha"] == senha:
-        usuario_logado = login
-        print("Logado!")
-    else:
-        print("Senha errada.")
+        login_salvo = dados[0]
+        senha_salva = dados[1]
 
+        if login == login_salvo and senha == senha_salva:
+            usuario_logado = login
+            print("Logado!")
+            return
 
-def fazer_logout():
-    global usuario_logado
-    usuario_logado = None
-    print("Logout feito.")
+    print("Erro no login.")
 
 
-# ── VÍDEOS ───────────────────────────────────────────────
-
-def cadastrar_video():
-    if not requer_login():
-        return
-
-    nome = input("Nome: ")
-
-    if nome in videos:
-        print("Já existe.")
-        return
-
-    videos[nome] = {
-        "descricao": input("Descrição: "),
-        "genero": input("Gênero: "),
-        "ano": input("Ano: "),
-        "likes": 0
-    }
-
-    salvar_dados()
-    print("Vídeo cadastrado!")
-
+# ─────────────────────────────
+# VÍDEOS
+# ─────────────────────────────
 
 def listar_videos():
-    if not videos:
+    if len(videos) == 0:
         print("Nenhum vídeo.")
         return
 
-    for nome in videos:
-        exibir_video(nome)
+    for video in videos:
+        dados = video.split(";")
+
+        print(dados[0] + " - " + dados[1] + " - likes: " + dados[2])
 
 
 def buscar_video():
-    termo = input("Buscar: ").lower()
+    termo = input("Buscar: ").strip().lower()
 
-    encontrados = [n for n in videos if termo in n.lower()]
+    achou = 0
 
-    for nome in encontrados:
-        exibir_video(nome)
+    for video in videos:
+        dados = video.split(";")
+
+        nome = dados[0].strip().lower()
+        descricao = dados[1]
+
+        if termo in nome:
+            print(dados[0] + " - " + descricao)
+            achou = 1
+
+    if achou == 0:
+        print("Nada encontrado.")
 
 
 def curtir_video():
-    if not requer_login():
+    if usuario_logado == "":
+        print("Faça login.")
         return
 
-    nome = input("Vídeo: ")
+    nome = input("Vídeo: ").strip()
 
-    if nome not in videos:
-        print("Não existe.")
-        return
+    i = 0
 
-    user = get_usuario()
+    while i < len(videos):
+        dados = videos[i].split(";")
 
-    if nome in user["curtidos"]:
-        print("Já curtiu.")
-        return
+        nome_video = dados[0]
+        descricao = dados[1]
+        likes = int(dados[2])
 
-    user["curtidos"].append(nome)
-    videos[nome]["likes"] += 1
+        if nome_video == nome:
+            likes = likes + 1
+            videos[i] = nome_video + ";" + descricao + ";" + str(likes)
 
-    salvar_dados()
-    print("Curtiu!")
+            salvar_dados()
+            print("Curtido.")
+            return
+
+        i = i + 1
+
+    print("Vídeo não encontrado.")
 
 
 def descurtir_video():
-    if not requer_login():
+    if usuario_logado == "":
+        print("Faça login.")
         return
 
-    nome = input("Vídeo: ")
-    user = get_usuario()
+    nome = input("Vídeo: ").strip()
 
-    if nome not in user["curtidos"]:
-        print("Você não curtiu.")
-        return
+    i = 0
 
-    user["curtidos"].remove(nome)
-    videos[nome]["likes"] -= 1
+    while i < len(videos):
+        dados = videos[i].split(";")
 
-    salvar_dados()
-    print("Descurtiu.")
+        nome_video = dados[0]
+        descricao = dados[1]
+        likes = int(dados[2])
+
+        if nome_video == nome:
+            if likes > 0:
+                likes = likes - 1
+
+            videos[i] = nome_video + ";" + descricao + ";" + str(likes)
+
+            salvar_dados()
+            print("Removido.")
+            return
+
+        i = i + 1
+
+    print("Vídeo não encontrado.")
 
 
-# ── PLAYLISTS ────────────────────────────────────────────
+# ─────────────────────────────
+# PLAYLIST (SIMPLES)
+# ─────────────────────────────
 
 def menu_playlists():
-    if not requer_login():
+    if usuario_logado == "":
+        print("Faça login.")
         return
 
-    while True:
-        print("\n1 Criar")
-        print("2 Listar")
-        print("3 Adicionar vídeo")
-        print("4 Ver playlist")
-        print("0 Voltar")
+    print("\n1 - Criar playlist")
+    print("2 - Ver dados do usuário")
 
-        op = input("Opção: ")
-        playlists = get_usuario()["playlists"]
+    op = input("Opção: ")
 
-        if op == "1":
-            nome = input("Nome: ")
-            playlists[nome] = []
-            salvar_dados()
+    if op == "1":
+        nome_playlist = input("Nome da playlist: ")
 
-        elif op == "2":
-            for p in playlists:
-                print(p)
+        for i in range(len(usuarios)):
+            dados = usuarios[i].split(";")
 
-        elif op == "3":
-            pl = input("Playlist: ")
-            vid = input("Vídeo: ")
-
-            if pl in playlists and vid in videos:
-                playlists[pl].append(vid)
+            if dados[0] == usuario_logado:
+                usuarios[i] = usuarios[i] + ";" + nome_playlist
                 salvar_dados()
+                print("Playlist criada.")
 
-        elif op == "4":
-            pl = input("Playlist: ")
-            for vid in playlists.get(pl, []):
-                exibir_video(vid)
-
-        elif op == "0":
-            break
+    elif op == "2":
+        for usuario in usuarios:
+            if usuario.startswith(usuario_logado):
+                print(usuario)
