@@ -1,0 +1,10 @@
+Breaking Bad;Série sobre química e crime;121
+Interestelar;Filme espacial de ficção científica;95
+Minecraft Movie;Filme baseado no jogo Minecraft;30
+The Office;Série de comédia no escritório;88
+Avatar;Filme de ficção científica;76
+Round 6;Série de sobrevivência;101
+Batman Begins;Filme do Batman;54
+Stranger Things;Série sobrenatural;140
+Vingadores Ultimato;Filme da Marvel;200
+Peaky Blinders;Série de gangsters;89
