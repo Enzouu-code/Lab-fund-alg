@@ -1,5 +1,9 @@
-ARQ_USUARIOS = "usuarios.txt"
-ARQ_VIDEOS = "videos.txt"
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+ARQ_USUARIOS = os.path.join(BASE_DIR, "usuarios.txt")
+ARQ_VIDEOS = os.path.join(BASE_DIR, "videos.txt")
 
 usuarios = []
 videos = []
@@ -7,9 +11,9 @@ videos = []
 usuario_logado = ""
 
 
-# ==========================================
+# =====================================
 # CARREGAR DADOS
-# ==========================================
+# =====================================
 
 def carregar_dados():
 
@@ -17,6 +21,12 @@ def carregar_dados():
 
     usuarios.clear()
     videos.clear()
+
+    if not os.path.exists(ARQ_USUARIOS):
+        open(ARQ_USUARIOS, "w").close()
+
+    if not os.path.exists(ARQ_VIDEOS):
+        open(ARQ_VIDEOS, "w").close()
 
     arq = open(ARQ_USUARIOS, "r", encoding="utf-8")
 
@@ -41,55 +51,55 @@ def carregar_dados():
     arq.close()
 
 
-# ==========================================
+# =====================================
 # SALVAR DADOS
-# ==========================================
+# =====================================
 
 def salvar_dados():
 
     arq = open(ARQ_USUARIOS, "w", encoding="utf-8")
 
-    for usuario in usuarios:
-        arq.write(usuario + "\n")
+    for u in usuarios:
+        arq.write(u + "\n")
 
     arq.close()
 
     arq = open(ARQ_VIDEOS, "w", encoding="utf-8")
 
-    for video in videos:
-        arq.write(video + "\n")
+    for v in videos:
+        arq.write(v + "\n")
 
     arq.close()
 
 
-# ==========================================
+# =====================================
 # USUÁRIOS
-# ==========================================
+# =====================================
 
 def cadastrar_usuario():
 
-    print("=== CADASTRO DE USUÁRIO ===")
+    print("=== CADASTRO ===")
 
-    login = input("Login: ").strip()
-    senha = input("Senha: ").strip()
+    login = input("Login: ")
+    senha = input("Senha: ")
 
     if login == "" or senha == "":
-        print("❌ Campos inválidos.")
+        print("❌ Inválido")
         return
 
-    for usuario in usuarios:
+    for u in usuarios:
 
-        dados = usuario.split(";")
+        dados = u.split(";")
 
         if dados[0] == login:
-            print("❌ Usuário já existe.")
+            print("❌ Já existe")
             return
 
     usuarios.append(login + ";" + senha)
 
     salvar_dados()
 
-    print("✅ Usuário cadastrado com sucesso.")
+    print("✅ Criado")
 
 
 def fazer_login():
@@ -98,196 +108,163 @@ def fazer_login():
 
     print("=== LOGIN ===")
 
-    login = input("Login: ").strip()
-    senha = input("Senha: ").strip()
+    login = input("Login: ")
+    senha = input("Senha: ")
 
-    for usuario in usuarios:
+    for u in usuarios:
 
-        dados = usuario.split(";")
+        dados = u.split(";")
 
-        login_salvo = dados[0]
-        senha_salva = dados[1]
-
-        if login == login_salvo and senha == senha_salva:
+        if login == dados[0] and senha == dados[1]:
 
             usuario_logado = login
 
-            print(f"✅ Bem-vindo, {login}!")
+            print("✅ Logado")
             return
 
-    print("❌ Login ou senha incorretos.")
+    print("❌ Erro")
 
 
-# ==========================================
+# =====================================
 # VÍDEOS
-# ==========================================
+# =====================================
 
 def listar_videos():
 
-    print("=== LISTA DE VÍDEOS ===")
+    print("=== VÍDEOS ===")
 
     if len(videos) == 0:
-        print("Nenhum vídeo cadastrado.")
+        print("Nenhum vídeo")
         return
 
-    for i, video in enumerate(videos, start=1):
+    for v in videos:
 
-        dados = video.split(";")
+        dados = v.split(";")
 
-        nome = dados[0]
-        descricao = dados[1]
-        likes = dados[2]
-
-        print(f"\n{i}. {nome}")
-        print(f"Descrição: {descricao}")
-        print(f"Curtidas: {likes}")
+        print("\nNome:", dados[0])
+        print("Descrição:", dados[1])
+        print("Likes:", dados[2])
 
 
 def buscar_video():
 
-    print("=== BUSCA DE VÍDEOS ===")
+    termo = input("Buscar: ")
 
-    termo = input("Digite o nome do vídeo: ").strip().lower()
+    for v in videos:
 
-    encontrou = False
+        dados = v.split(";")
 
-    for video in videos:
+        if termo.lower() in dados[0].lower():
 
-        dados = video.split(";")
+            print("\nEncontrado")
+            print("Nome:", dados[0])
+            print("Descrição:", dados[1])
+            print("Likes:", dados[2])
+            return
 
-        nome = dados[0]
-        descricao = dados[1]
-        likes = dados[2]
-
-        if termo in nome.lower():
-
-            print("\n🎬 Vídeo encontrado")
-            print(f"Nome: {nome}")
-            print(f"Descrição: {descricao}")
-            print(f"Curtidas: {likes}")
-
-            encontrou = True
-
-    if not encontrou:
-        print("❌ Nenhum vídeo encontrado.")
+    print("❌ Não encontrado")
 
 
 def curtir_video():
 
     if usuario_logado == "":
-        print("❌ Faça login primeiro.")
+        print("❌ Login necessário")
         return
 
-    nome = input("Nome do vídeo: ").strip().lower()
+    nome = input("Vídeo: ")
 
     for i in range(len(videos)):
 
         dados = videos[i].split(";")
 
-        nome_video = dados[0]
-        descricao = dados[1]
-        likes = int(dados[2])
+        if nome.lower() == dados[0].lower():
 
-        if nome == nome_video.lower():
+            likes = int(dados[2]) + 1
 
-            likes += 1
-
-            videos[i] = nome_video + ";" + descricao + ";" + str(likes)
+            videos[i] = dados[0] + ";" + dados[1] + ";" + str(likes)
 
             salvar_dados()
 
-            print("✅ Vídeo curtido.")
+            print("❤️ Curtido")
             return
 
-    print("❌ Vídeo não encontrado.")
+    print("❌ Não achado")
 
 
 def descurtir_video():
 
     if usuario_logado == "":
-        print("❌ Faça login primeiro.")
+        print("❌ Login necessário")
         return
 
-    nome = input("Nome do vídeo: ").strip().lower()
+    nome = input("Vídeo: ")
 
     for i in range(len(videos)):
 
         dados = videos[i].split(";")
 
-        nome_video = dados[0]
-        descricao = dados[1]
-        likes = int(dados[2])
+        if nome.lower() == dados[0].lower():
 
-        if nome == nome_video.lower():
+            likes = int(dados[2])
 
             if likes > 0:
-                likes -= 1
+                likes = likes - 1
 
-            videos[i] = nome_video + ";" + descricao + ";" + str(likes)
+            videos[i] = dados[0] + ";" + dados[1] + ";" + str(likes)
 
             salvar_dados()
 
-            print("✅ Curtida removida.")
+            print("💔 Removido")
             return
 
-    print("❌ Vídeo não encontrado.")
+    print("❌ Não achado")
 
 
-# ==========================================
+# =====================================
 # PLAYLISTS
-# ==========================================
+# =====================================
 
 def menu_playlists():
 
     if usuario_logado == "":
-        print("❌ Faça login primeiro.")
+        print("❌ Login necessário")
         return
 
-    print("=== PLAYLISTS ===")
-    print("1 - Criar playlist")
-    print("2 - Ver minhas playlists")
+    print("1 - Criar")
+    print("2 - Ver")
 
-    opcao = input("Escolha: ")
+    op = input("Opção: ")
 
-    if opcao == "1":
+    for i in range(len(usuarios)):
 
-        nome_playlist = input("Nome da playlist: ").strip()
+        dados = usuarios[i].split(";")
 
-        if nome_playlist == "":
-            print("❌ Nome inválido.")
-            return
+        if dados[0] == usuario_logado:
 
-        for i in range(len(usuarios)):
+            if op == "1":
 
-            dados = usuarios[i].split(";")
+                nome = input("Nome playlist: ")
 
-            if dados[0] == usuario_logado:
-
-                usuarios[i] += ";" + nome_playlist
+                usuarios[i] = usuarios[i] + ";" + nome
 
                 salvar_dados()
 
-                print("✅ Playlist criada.")
+                print("✅ Criada")
                 return
 
-    elif opcao == "2":
-
-        for usuario in usuarios:
-
-            dados = usuario.split(";")
-
-            if dados[0] == usuario_logado:
-
-                print("\n=== SUAS PLAYLISTS ===")
+            elif op == "2":
 
                 if len(dados) <= 2:
-                    print("Nenhuma playlist criada.")
+                    print("Sem playlists")
                     return
 
-                for i in range(2, len(dados)):
-                    print(f"- {dados[i]}")
+                print("\n=== PLAYLISTS ===")
+
+                for j in range(2, len(dados)):
+                    print("-", dados[j])
 
                 return
 
-    else:
-        print("❌ Opção inválida.")
+            else:
+                print("❌ Opção inválida")
+                return
