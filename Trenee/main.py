@@ -25,7 +25,9 @@ while True:
     print("5  - Curtir vídeo")
     print("6  - Descurtir vídeo")
     print("─" * 40)
-    print("7  - Gerenciar playlists")
+    print("7  - Ver favoritos")
+    print("8  - Adicionar favorito")
+    print("9  - Remover favorito")
     print("─" * 40)
     print("0  - Sair")
 
@@ -52,16 +54,28 @@ while True:
         funcoes.descurtir_video()
 
     elif opcao == "7":
-        funcoes.menu_playlists()
+        funcoes.ver_favoritos()
+
+    elif opcao == "8":
+        funcoes.adicionar_favorito()
+
+    elif opcao == "9":
+        funcoes.remover_favorito()
 
     elif opcao == "0":
+
         funcoes.salvar_dados()
+
         print("Saindo do FEItv...")
+
         time.sleep(1)
+
         break
 
     else:
-        print("❌ Opção inválida.")
+        print("❌ Opção inválida")
 
     input("\nPressione ENTER para continuar...")
+
     limpar()
+

@@ -221,19 +221,56 @@ def descurtir_video():
 
 
 # =====================================
-# PLAYLISTS
+# FAVORITOS
 # =====================================
 
-def menu_playlists():
+def ver_favoritos():
 
     if usuario_logado == "":
         print("❌ Login necessário")
         return
 
-    print("1 - Criar")
-    print("2 - Ver")
+    for u in usuarios:
 
-    op = input("Opção: ")
+        dados = u.split(";")
+
+        if dados[0] == usuario_logado:
+
+            print("\n=== FAVORITOS ===")
+
+            if len(dados) < 3 or dados[2] == "":
+                print("Nenhum favorito")
+                return
+
+            favoritos = dados[2].split(",")
+
+            for f in favoritos:
+                print("❤️", f)
+
+            return
+
+
+def adicionar_favorito():
+
+    if usuario_logado == "":
+        print("❌ Login necessário")
+        return
+
+    nome_video = input("Vídeo para favoritar: ")
+
+    video_existe = False
+
+    for v in videos:
+
+        dados_video = v.split(";")
+
+        if nome_video.lower() == dados_video[0].lower():
+            video_existe = True
+            break
+
+    if not video_existe:
+        print("❌ Vídeo não encontrado")
+        return
 
     for i in range(len(usuarios)):
 
@@ -241,30 +278,66 @@ def menu_playlists():
 
         if dados[0] == usuario_logado:
 
-            if op == "1":
+            favoritos = []
 
-                nome = input("Nome playlist: ")
+            if len(dados) >= 3 and dados[2] != "":
+                favoritos = dados[2].split(",")
 
-                usuarios[i] = usuarios[i] + ";" + nome
-
-                salvar_dados()
-
-                print("✅ Criada")
+            if nome_video in favoritos:
+                print("❌ Já favoritado")
                 return
 
-            elif op == "2":
+            favoritos.append(nome_video)
 
-                if len(dados) <= 2:
-                    print("Sem playlists")
-                    return
-
-                print("\n=== PLAYLISTS ===")
-
-                for j in range(2, len(dados)):
-                    print("-", dados[j])
-
-                return
-
+            if len(dados) >= 3:
+                dados[2] = ",".join(favoritos)
             else:
-                print("❌ Opção inválida")
+                dados.append(",".join(favoritos))
+
+            usuarios[i] = ";".join(dados)
+
+            salvar_dados()
+
+            print("✅ Favoritado")
+            return
+
+    print("❌ Usuário não encontrado")
+
+
+def remover_favorito():
+
+    if usuario_logado == "":
+        print("❌ Login necessário")
+        return
+
+    nome_video = input("Vídeo para remover: ")
+
+    for i in range(len(usuarios)):
+
+        dados = usuarios[i].split(";")
+
+        if dados[0] == usuario_logado:
+
+            if len(dados) < 3 or dados[2] == "":
+                print("❌ Nenhum favorito")
                 return
+
+            favoritos = dados[2].split(",")
+
+            if nome_video not in favoritos:
+                print("❌ Vídeo não favoritado")
+                return
+
+            favoritos.remove(nome_video)
+
+            dados[2] = ",".join(favoritos)
+
+            usuarios[i] = ";".join(dados)
+
+            salvar_dados()
+
+            print("✅ Removido dos favoritos")
+            return
+
+    print("❌ Usuário não encontrado")
+
